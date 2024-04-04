@@ -57,14 +57,12 @@ public class TaskController {
     @Operation(summary = "Inclui uma tarefa na lista")
     public ResponseEntity<Task> addTask(@RequestBody Task task) {
         try {
-            Task newTask = taskRepository.save(new Task(task.getDescription())); 
-                                                                            
+            Task newTask = taskRepository.save(new Task(task.getId(),task.getDescription(),task.getCompleted()));                                          
             return new ResponseEntity<>(newTask, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
     @PutMapping("/task/{id}")
     @Operation(summary = "Atualiza uma tarefa na lista através do ID")
     public ResponseEntity<Task> updateTask(@PathVariable("id") long id, @RequestBody Task task) {
@@ -79,7 +77,8 @@ public class TaskController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
+ 
+ 
     @DeleteMapping("/task/{id}")
     @Operation(summary = "Deleta uma tarefa pelo ID")
     public ResponseEntity<Void> deleteTask(@PathVariable("id") long id) {
