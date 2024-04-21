@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -63,7 +62,7 @@ public class TaskController {
     @PostMapping("/task")
     @Operation(summary = "Inclui uma tarefa na lista")
     public ResponseEntity<EntityModel<Task>> addTask(@RequestBody Task task) {
-        Task newTask = taskRepository.save(new Task(task.getId(), task.getDescription(), task.getCompleted()));
+        Task newTask = taskRepository.save(new Task(task.getId(), task.getDescription(), task.getCompleted(), task.getDueDate(), task.getDeadlineDays(), task.getTaskType()));
         return ResponseEntity.created(linkTo(methodOn(TaskController.class).findTaskById(newTask.getId())).toUri())
             .body(EntityModel.of(newTask,
                 linkTo(methodOn(TaskController.class).findTaskById(newTask.getId())).withSelfRel(),
@@ -72,21 +71,24 @@ public class TaskController {
     }
 
     @PutMapping("/task/{id}")
-@Operation(summary = "Atualiza uma tarefa na lista através do ID")
-public ResponseEntity<EntityModel<Task>> updateTask(@PathVariable("id") long id, @RequestBody Task task) {
-    Optional<Task> taskData = taskRepository.findById(id);
+    @Operation(summary = "Atualiza uma tarefa na lista através do ID")
+    public ResponseEntity<EntityModel<Task>> updateTask(@PathVariable("id") long id, @RequestBody Task task) {
+        Optional<Task> taskData = taskRepository.findById(id);
 
-    return taskData.map(existingTask -> {
-        if (task.getDescription() != null) existingTask.setDescription(task.getDescription());
-        if (task.getCompleted() != null) existingTask.setCompleted(task.getCompleted());
-        taskRepository.save(existingTask);
-        return EntityModel.of(existingTask,
-            linkTo(methodOn(TaskController.class).findTaskById(id)).withSelfRel(),
-            linkTo(methodOn(TaskController.class).updateTask(id, existingTask)).withRel("update"),
-            linkTo(methodOn(TaskController.class).deleteTask(id)).withRel("delete"));
-    }).map(ResponseEntity::ok)
-      .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-}
+        return taskData.map(existingTask -> {
+            if (task.getDescription() != null) existingTask.setDescription(task.getDescription());
+            if (task.getCompleted() != null) existingTask.setCompleted(task.getCompleted());
+            if (task.getDueDate() != null) existingTask.setDueDate(task.getDueDate());
+            if (task.getDeadlineDays() != null) existingTask.setDeadlineDays(task.getDeadlineDays());
+            if (task.getTaskType() != null) existingTask.setTaskType(task.getTaskType());
+            taskRepository.save(existingTask);
+            return EntityModel.of(existingTask,
+                linkTo(methodOn(TaskController.class).findTaskById(id)).withSelfRel(),
+                linkTo(methodOn(TaskController.class).updateTask(id, existingTask)).withRel("update"),
+                linkTo(methodOn(TaskController.class).deleteTask(id)).withRel("delete"));
+        }).map(ResponseEntity::ok)
+          .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
 
     @DeleteMapping("/task/{id}")
     @Operation(summary = "Deleta uma tarefa pelo ID")
