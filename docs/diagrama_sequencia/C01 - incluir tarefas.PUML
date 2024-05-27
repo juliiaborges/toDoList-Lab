@@ -1,0 +1,35 @@
+@startuml title adicionar tarefas
+actor Usuário
+Boundary Frontend
+Control TaskController
+Entity Task
+Participant TaskRepository
+Boundary ResponseEntity
+Database Banco_de_Dados
+
+activate Usuário
+Usuário -> Frontend: Requisição para adicionar tarefa
+activate Frontend
+
+Frontend -> TaskController: POST /task
+activate TaskController
+TaskController -> TaskRepository: save(Task)
+activate TaskRepository
+TaskRepository -> Banco_de_Dados: INSERT INTO Task
+activate Banco_de_Dados
+Banco_de_Dados --> TaskRepository: Tarefa adicionada com sucesso
+destroy Banco_de_Dados
+TaskRepository --> TaskController: Tarefa adicionada com sucesso
+destroy TaskRepository
+
+TaskController -> ResponseEntity: Retorna resposta de sucesso
+activate ResponseEntity
+ResponseEntity --> TaskController: Resposta HTTP com sucesso
+destroy ResponseEntity
+
+TaskController --> Frontend: Resposta de sucesso
+destroy TaskController
+Frontend --> Usuário: Resposta de sucesso
+destroy Frontend
+deactivate Usuário
+@enduml

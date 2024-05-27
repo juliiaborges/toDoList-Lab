@@ -1,0 +1,42 @@
+@startuml title listar tarefas
+actor Usuário
+Boundary Frontend
+Control TaskController
+Entity Task
+Participant TaskRepository
+Boundary ResponseEntity
+Database Banco_de_Dados
+
+activate Usuário
+Usuário -> Frontend: Requisição para listar tarefas
+activate Frontend
+
+Frontend -> TaskController: GET /task
+activate TaskController
+TaskController -> TaskRepository: findAll()
+activate TaskRepository
+TaskRepository -> Banco_de_Dados: SELECT * FROM Task
+activate Banco_de_Dados
+Banco_de_Dados --> TaskRepository: Lista de tarefas
+destroy Banco_de_Dados
+TaskRepository --> TaskController: Lista de tarefas
+destroy TaskRepository
+
+alt Tarefas encontradas
+    TaskController -> ResponseEntity: Retorna lista de tarefas
+    activate ResponseEntity
+    ResponseEntity --> TaskController: Resposta HTTP com lista de tarefas
+    destroy ResponseEntity
+else Nenhuma tarefa encontrada
+    TaskController -> ResponseEntity: Retorna resposta vazia
+    activate ResponseEntity
+    ResponseEntity --> TaskController: Resposta HTTP vazia
+    destroy ResponseEntity
+end
+
+TaskController --> Frontend: Lista de tarefas
+destroy TaskController
+Frontend --> Usuário: Lista de tarefas
+destroy Frontend
+deactivate Usuário
+@enduml

@@ -1,0 +1,55 @@
+@startuml title excluir tarefas
+actor Usuário
+Boundary Frontend
+Control TaskController
+Entity Task
+Participant TaskRepository
+Boundary ResponseEntity
+Database Banco_de_Dados
+
+activate Usuário
+Usuário -> Frontend: Requisição para excluir tarefa
+activate Frontend
+
+Frontend -> TaskController: DELETE /task/{id}
+activate TaskController
+TaskController -> TaskRepository: findById(id)
+activate TaskRepository
+TaskRepository -> Banco_de_Dados: SELECT * FROM Task WHERE id = {id}
+activate Banco_de_Dados
+Banco_de_Dados --> TaskRepository: Tarefa encontrada
+destroy Banco_de_Dados
+TaskRepository --> TaskController: Tarefa encontrada
+destroy TaskRepository
+
+alt Tarefa encontrada
+    TaskController -> TaskRepository: deleteById(id)
+    activate TaskRepository
+    TaskRepository -> Banco_de_Dados: DELETE FROM Task WHERE id = {id}
+    activate Banco_de_Dados
+    Banco_de_Dados --> TaskRepository: Tarefa excluída com sucesso
+    destroy Banco_de_Dados
+    TaskRepository --> TaskController: Tarefa excluída com sucesso
+    destroy TaskRepository
+
+    TaskController -> ResponseEntity: Retorna resposta de sucesso
+    activate ResponseEntity
+    ResponseEntity --> TaskController: Resposta HTTP com sucesso
+    destroy ResponseEntity
+
+    TaskController --> Frontend: Resposta de sucesso
+    destroy TaskController
+else Tarefa não encontrada
+    TaskController -> ResponseEntity: Retorna resposta de erro
+    activate ResponseEntity
+    ResponseEntity --> TaskController: Resposta HTTP com erro
+    destroy ResponseEntity
+
+    TaskController --> Frontend: Resposta de erro
+    destroy TaskController
+end
+
+Frontend --> Usuário: Resposta de sucesso/erro
+destroy Frontend
+deactivate Usuário
+@enduml

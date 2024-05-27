@@ -1,0 +1,57 @@
+@startuml title concluir tarefas
+actor Usuário
+Boundary Frontend
+Control TaskController
+Entity Task
+Participant TaskRepository
+Boundary ResponseEntity
+Database Banco_de_Dados
+
+activate Usuário
+Usuário -> Frontend: Requisição para concluir tarefa
+activate Frontend
+
+Frontend -> TaskController: PUT /task/{id}/complete
+activate TaskController
+TaskController -> TaskRepository: findById(id)
+activate TaskRepository
+TaskRepository -> Banco_de_Dados: SELECT * FROM Task WHERE id = {id}
+activate Banco_de_Dados
+Banco_de_Dados --> TaskRepository: Tarefa encontrada
+destroy Banco_de_Dados
+TaskRepository --> TaskController: Tarefa encontrada
+destroy TaskRepository
+
+alt Tarefa encontrada
+    TaskController -> Task: Marcar tarefa como concluída
+    activate Task
+    Task -> TaskRepository: save(Task)
+    activate TaskRepository
+    TaskRepository -> Banco_de_Dados: UPDATE Task SET completed = true WHERE id = {id}
+    activate Banco_de_Dados
+    Banco_de_Dados --> TaskRepository: Tarefa marcada como concluída
+    destroy Banco_de_Dados
+    TaskRepository --> TaskController: Tarefa marcada como concluída
+    destroy TaskRepository
+
+    TaskController -> ResponseEntity: Retorna resposta de sucesso
+    activate ResponseEntity
+    ResponseEntity --> TaskController: Resposta HTTP com sucesso
+    destroy ResponseEntity
+
+    TaskController --> Frontend: Resposta de sucesso
+    destroy TaskController
+else Tarefa não encontrada
+    TaskController -> ResponseEntity: Retorna resposta de erro
+    activate ResponseEntity
+    ResponseEntity --> TaskController: Resposta HTTP com erro
+    destroy ResponseEntity
+
+    TaskController --> Frontend: Resposta de erro
+    destroy TaskController
+end
+
+Frontend --> Usuário: Resposta de sucesso/erro
+destroy Frontend
+deactivate Usuário
+@enduml
