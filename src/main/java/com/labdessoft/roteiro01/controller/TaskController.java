@@ -32,6 +32,12 @@ public class TaskController {
     @Autowired
     private TaskRepository taskRepository;
 
+
+    @Autowired
+    public TaskController(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
+    }
+
     @GetMapping("/task")
     @Operation(summary = "Lista todas as tarefas da lista")
     public ResponseEntity<CollectionModel<EntityModel<Task>>> listAll() {
